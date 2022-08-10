@@ -1,0 +1,33 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input CreateUserInput {
+  """Example field (placeholder)"""
+  email: String!
+  password: String!
+}
+
+type Mutation {
+  createUser(data: CreateUserInput!): User!
+  removeUser(id: Int!): User!
+  updateUser(updateUserInput: UpdateUserInput!): User!
+}
+
+type Query {
+  user(email: String!): User!
+}
+
+input UpdateUserInput {
+  """Example field (placeholder)"""
+  email: String
+  id: Int!
+  password: String
+}
+
+type User {
+  email: String!
+  roles: [String!]!
+  userType: String!
+  verifiedEmail: Boolean!
+}
