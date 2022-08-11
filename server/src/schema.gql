@@ -3,12 +3,12 @@
 # ------------------------------------------------------
 
 input CreateUserInput {
-  """Example field (placeholder)"""
   email: String!
   password: String!
 }
 
 type Mutation {
+  createAdminUser(data: CreateUserInput!): User!
   createUser(data: CreateUserInput!): User!
   removeUser(id: Int!): User!
   updateUser(updateUserInput: UpdateUserInput!): User!
@@ -19,7 +19,6 @@ type Query {
 }
 
 input UpdateUserInput {
-  """Example field (placeholder)"""
   email: String
   id: Int!
   password: String

@@ -1,11 +1,11 @@
-import { InputType, Int, Field, ObjectType } from '@nestjs/graphql';
+import { Field, HideField, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
-export class CreateUserDto {
+export class User {
     @Field(() => String)
     email: string;
 
-    @Field(() => String)
+    @HideField()
     password: string;
 
     @Field(() => [String])

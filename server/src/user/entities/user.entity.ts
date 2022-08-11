@@ -1,31 +1,34 @@
 import { ObjectType, Field, Int, HideField } from '@nestjs/graphql';
+import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose'
 
-export const UserSchema = new mongoose.Schema({
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  roles: { type: [String] },
-  userType: { type: String },
-  verifiedEmail: { type: Boolean }
-})
+// export const UserSchema = new mongoose.Schema({
+//   email: { type: String, required: true, unique: true },
+//   password: { type: String, required: true },
+//   roles: { type: [String] },
+//   userType: { type: String },
+//   verifiedEmail: { type: Boolean }
+// })
 
-@ObjectType()
+@Schema()
 export class User {
-  @Field(() => String)
+  @Prop({ type: String, unique: true })
   email: string;
 
-  @HideField()
+  @Prop({ type: String, default: "H@l0Password" })
   password: string;
 
-  @Field(() => [String])
+  @Prop({ type: [String] })
   roles: string[];
 
-  @Field(() => String)
+  @Prop({ type: String })
   userType: string;
 
-  @Field(() => Boolean, { defaultValue: false })
+  @Prop({ type: Boolean, default: false })
   verifiedEmail: boolean;
 }
+
+export const UserSchema = SchemaFactory.createForClass(User);
 
 // @Field(() => [ID])
 // user: mongoose.Types.ObjectId[];

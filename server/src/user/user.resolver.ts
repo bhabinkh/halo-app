@@ -1,11 +1,11 @@
 import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { UserService } from './user.service';
-import { User } from './entities/user.entity';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
 import { objTrim } from 'src/common/helper/object-trim';
-import { ForbiddenException, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, InternalServerErrorException } from '@nestjs/common';
 import { validEmail, validPassword } from 'src/common/validation/validation';
+import { User } from './dto/user.dto';
 
 @Resolver()
 export class UserResolver {
@@ -19,17 +19,39 @@ export class UserResolver {
     const data = objTrim({ ...createUserInput, roles, userType, verifiedEmail })
 
     if (validEmail(data.email) && validPassword(data.password)) {
-      try {
-        const userFromDB = await this.userService.getUserByEmail(data.email)
-        console.log(userFromDB)
-        if (!userFromDB) return await this.userService.createUser(data);
-        else if (!userFromDB.verifiedEmail) return userFromDB
-        else throw new ForbiddenException("Registration: User already registered")
-      } catch (err) {
-        throw new InternalServerErrorException("Internal Server Error")
+      const userFromDB = await this.userService.getUserByEmail(data.email)
+      console.log(userFromDB)
+
+      if (!userFromDB) return await this.userService.createUser(data);
+      else if (!userFromDB.verifiedEmail) {
+        throw new ForbiddenException("Registration: User not verified.")
+      } else {
+        throw new ForbiddenException("Registration: User registered already.")
       }
     } else {
-      throw new ForbiddenException("Registration: Invalid credentials")
+      throw new BadRequestException("Registration: Invalid credentials")
+    }
+  }
+
+  @Mutation(() => User)
+  async createAdminUser(@Args('data') createUserInput: CreateUserInput): Promise<User> {
+    const roles = ['user, moderator, admin']
+    const userType = 'admin'
+    const verifiedEmail = false
+    const data = objTrim({ ...createUserInput, roles, userType, verifiedEmail })
+
+    if (validEmail(data.email) && validPassword(data.password)) {
+      const userFromDB = await this.userService.getUserByEmail(data.email)
+      console.log(userFromDB)
+
+      if (!userFromDB) return await this.userService.createUser(data);
+      else if (!userFromDB.verifiedEmail) {
+        throw new ForbiddenException("Registration: User not verified.")
+      } else {
+        throw new ForbiddenException("Registration: User registered already.")
+      }
+    } else {
+      throw new BadRequestException("Registration: Invalid credentials")
     }
   }
 
@@ -57,5 +79,21 @@ export class UserResolver {
   removeUser(@Args('id', { type: () => Int }) id: number) {
     return this.userService.removeUser(id);
   }
+
+  // const createUser = 
+
+  // if (validEmail(data.email) && validPassword(data.password)) {
+  //   const userFromDB = await this.userService.getUserByEmail(data.email)
+  //   console.log(userFromDB)
+
+  //   if (!userFromDB) return await this.userService.createUser(data);
+  //   else if (!userFromDB.verifiedEmail) {
+  //     throw new ForbiddenException("Registration: User not verified.")
+  //   } else {
+  //     throw new ForbiddenException("Registration: User registered already.")
+  //   }
+  // } else {
+  //   throw new BadRequestException("Registration: Invalid credentials")
+  // }
 
 }
