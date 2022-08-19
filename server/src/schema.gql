@@ -2,6 +2,16 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Auth {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input CreateAuthInput {
+  email: String!
+  password: String!
+}
+
 input CreateUserInput {
   email: String!
   password: String!
@@ -9,13 +19,30 @@ input CreateUserInput {
 
 type Mutation {
   createAdminUser(data: CreateUserInput!): User!
+  createAuth(createAuthInput: CreateAuthInput!): Auth!
   createUser(data: CreateUserInput!): User!
+  loginUser(data: CreateAuthInput!): Tokens!
+  refreshToken(token: String!): Tokens!
+  removeAuth(id: Int!): Auth!
   removeUser(id: Int!): User!
+  updateAuth(updateAuthInput: UpdateAuthInput!): Auth!
   updateUser(updateUserInput: UpdateUserInput!): User!
 }
 
 type Query {
+  auth(id: Int!): Auth!
   user(email: String!): User!
+}
+
+type Tokens {
+  accessToken: String!
+  refreshToken: String!
+}
+
+input UpdateAuthInput {
+  email: String
+  id: Int!
+  password: String
 }
 
 input UpdateUserInput {
@@ -26,6 +53,7 @@ input UpdateUserInput {
 
 type User {
   email: String!
+  refreshToken: String!
   roles: [String!]!
   userType: String!
   verifiedEmail: Boolean!

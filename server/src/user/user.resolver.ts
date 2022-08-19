@@ -37,7 +37,7 @@ export class UserResolver {
   async createAdminUser(@Args('data') createUserInput: CreateUserInput): Promise<User> {
     const roles = ['user, moderator, admin']
     const userType = 'admin'
-    const verifiedEmail = false
+    let verifiedEmail = true
     const data = objTrim({ ...createUserInput, roles, userType, verifiedEmail })
 
     if (validEmail(data.email) && validPassword(data.password)) {

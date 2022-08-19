@@ -7,6 +7,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { getError } from './common/helper/error';
 import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [MongooseModule.forRoot(
@@ -23,7 +24,8 @@ import { UserModule } from './user/user.module';
       return error
     }
   }),
-    UserModule],
+    UserModule,
+    AuthModule],
   controllers: [AppController],
   providers: [AppService],
 })

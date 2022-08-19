@@ -16,4 +16,7 @@ export class User {
 
     @Field(() => Boolean)
     verifiedEmail?: boolean;
+
+    @Field(() => String)
+    refreshToken?: String
 }
