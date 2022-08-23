@@ -10,6 +10,7 @@ import { Tokens } from './dto/token.dto';
 import { ForbiddenException, InternalServerErrorException, PreconditionFailedException, UnauthorizedException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { jwtConstants } from 'src/common/helper/jwtConstants';
+import { EmailVerification } from './dto/email-verification.input';
 
 @Resolver(() => Auth)
 export class AuthResolver {
@@ -22,20 +23,13 @@ export class AuthResolver {
 
   @Mutation(() => Tokens)
   async loginUser(@Args('data') data: CreateAuthInput): Promise<Tokens> {
-    const user = await this.userService.getUserByEmail(data.email)
-    if (!user) throw new UnauthorizedException("Invalid Credentials")
-
-    const passwordMatch = await bcrypt.compare(data.password, user.password)
-    if (!passwordMatch) throw new UnauthorizedException("Invalid credentials")
-
-    if (!user.verifiedEmail) throw new PreconditionFailedException("User not registered")
-
     try {
-      const tokens = await this.authService.loginUser(data.email)
-      if (tokens) return tokens
+      const tokens = await this.authService.loginUser(data)
+      return tokens
     }
     catch (err) {
-      throw new InternalServerErrorException("Error in login")
+      console.log(err)
+      throw new UnauthorizedException("Invalid Credentials")
     }
   }
 
@@ -56,6 +50,27 @@ export class AuthResolver {
       throw new InternalServerErrorException("Error in login")
     }
   }
+
+  // @Mutation(() => String)
+  // async verifyUser(@Args('data') data: EmailVerification): Promise<Boolean> {
+  //   const user = await this.userModel.findOne({ email: data.email })
+
+  //   if (user && user.emailToken) {
+  //     if (user.emailToken === data.token) {
+  //       await this.userModel.findOneAndUpdate({ email: data.email }, { verifiedEmail: true })
+  //       return true
+  //     }
+  //   }
+  //   let status = ''
+  //   try {
+  //     const verifyStatus = await this.authService.verifyEmail(data)
+  //     if (verifyStatus) return true
+  //   }
+  //   catch (err) {
+  //     throw new InternalServerErrorException("Error in login")
+  //   }
+  // }
+
 
   @Mutation(() => Auth)
   createAuth(@Args('createAuthInput') createAuthInput: CreateAuthInput) {

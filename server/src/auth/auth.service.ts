@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt'
 import { JwtService } from '@nestjs/jwt'
@@ -9,12 +9,16 @@ import { CreateAuthInput } from './dto/create-auth.input';
 import { Tokens } from './dto/token.dto';
 import { UpdateAuthInput } from './dto/update-auth.input';
 import { jwtConstants } from 'src/common/helper/jwtConstants';
+import { EmailVerification } from './dto/email-verification.input';
+import { UserService } from 'src/user/user.service';
 
+let saltRounds = 10
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel('User') private readonly userModel: Model<User>,
     // @InjectModel('User') private readonly userModel: Model<User>,
+    private readonly userService: UserService,
     private readonly jwtService: JwtService,
   ) { }
 
@@ -23,31 +27,47 @@ export class AuthService {
     return true
   }
 
-  async loginUser(email: string): Promise<Tokens> {
-    const tokens = await this.createTokens(email)
-    await this.updateRefreshToken(email, tokens.refreshToken)
-    return tokens
+  async loginUser(data: CreateAuthInput): Promise<Tokens> {
+    const user = await this.userService.getUserByEmail(data.email)
+    if (!user) return
+
+    const passwordMatch = await bcrypt.compare(data.password, user.password)
+    if (!passwordMatch) return
+
+    else {
+      const payload = {
+        userId: user.id,
+        email: user.email
+      }
+      const tokens = await this.createTokens(payload)
+      await this.updateRefreshToken(user.id, tokens.refreshToken)
+      return tokens
+    }
   }
 
-  async createTokens(email: string): Promise<Tokens> {
-    const payload = email
-
+  async createTokens(payload: any): Promise<Tokens> {
     const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(payload, {
+      await this.jwtService.signAsync(payload, {
         secret: jwtConstants.secret,
         expiresIn: '15m',
       }),
-      this.jwtService.signAsync(payload, {
+      await this.jwtService.signAsync(payload, {
         secret: jwtConstants.secret,
-        expiresIn: '90d'
+        expiresIn: '90d',
       })
     ])
     return { accessToken, refreshToken }
   }
 
-  async updateRefreshToken(email: string, refreshToken: string): Promise<boolean> {
-    const hashRefreshToken = await bcrypt.hash(refreshToken)
-    await this.userModel.findOneAndUpdate({ email: email }, { refreshToken: hashRefreshToken })
+  async updateRefreshToken(userId: string, refreshToken: string): Promise<boolean> {
+    const user = await this.userModel.findById(userId)
+    console.log(user)
+    const hashRefreshToken = await bcrypt.hash(refreshToken, saltRounds)
+    const newUser = await (await this.userModel.findByIdAndUpdate(userId, { refreshToken: hashRefreshToken }))
+
+    // const newUser = await this.userModel.findById(userId)
+    console.log(await newUser.save())
+
     return true
   }
 
@@ -57,6 +77,17 @@ export class AuthService {
     await this.updateRefreshToken(email, tokens.refreshToken)
     return tokens
   }
+
+  // async verifyEmail(data: EmailVerification): Promise<Boolean> {
+  //   const user = await this.userModel.findOne({ email: data.email })
+  //   if (user && user.emailToken) {
+  //     if (user.emailToken === data.token) {
+  //       await this.userModel.findOneAndUpdate({ email: data.email }, { verifiedEmail: true })
+  //       return true
+  //     }
+  //   }
+  //   return false
+  // }
 
   create(createAuthInput: CreateAuthInput) {
     return 'This action adds a new auth';

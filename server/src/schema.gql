@@ -53,6 +53,7 @@ input UpdateUserInput {
 
 type User {
   email: String!
+  id: ID!
   refreshToken: String!
   roles: [String!]!
   userType: String!

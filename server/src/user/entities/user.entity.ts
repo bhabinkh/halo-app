@@ -15,7 +15,7 @@ export class User {
   @Prop({ type: String, unique: true })
   email: string;
 
-  @Prop({ type: String, default: "H@l0Password" })
+  @Prop({ type: String })
   password: string;
 
   @Prop({ type: [String] })
@@ -24,8 +24,11 @@ export class User {
   @Prop({ type: String })
   userType: string;
 
-  @Prop({ type: Boolean, default: false })
+  @Prop({ type: Boolean })
   verifiedEmail: boolean;
+
+  @Prop({ type: String })
+  refreshToken: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
