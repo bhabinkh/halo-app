@@ -60,21 +60,17 @@ export class AuthService {
   }
 
   async updateRefreshToken(userId: string, refreshToken: string): Promise<boolean> {
-    const user = await this.userModel.findById(userId)
-    console.log(user)
     const hashRefreshToken = await bcrypt.hash(refreshToken, saltRounds)
-    const newUser = await (await this.userModel.findByIdAndUpdate(userId, { refreshToken: hashRefreshToken }))
-
-    // const newUser = await this.userModel.findById(userId)
-    console.log(await newUser.save())
-
+    const newUser = await this.userModel.findByIdAndUpdate(userId, { refreshToken: hashRefreshToken })
+    await newUser.save()
     return true
   }
 
-  async refreshToken(email: string): Promise<Tokens> {
-    const tokens = await this.createTokens(email)
-
-    await this.updateRefreshToken(email, tokens.refreshToken)
+  async refreshToken(refreshToken: string): Promise<Tokens> {
+    const user = await this.jwtService.verifyAsync(refreshToken, { secret: jwtConstants.secret })
+    const payload = { userId: user.userId, email: user.email }
+    const tokens = await this.createTokens(payload)
+    await this.updateRefreshToken(payload.userId, tokens.refreshToken)
     return tokens
   }
 

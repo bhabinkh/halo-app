@@ -35,15 +35,17 @@ export class AuthResolver {
 
   @Mutation(() => Tokens)
   async refreshToken(@Args('token') refreshToken: string): Promise<Tokens> {
-    const payload = await this.jwtService.verifyAsync(refreshToken, { secret: jwtConstants.secret })
+    // const payload = await this.jwtService.verifyAsync(refreshToken, { secret: jwtConstants.secret })
 
-    const user = await this.userService.getUserByEmail(payload.email)
-    if (!user || !user.refreshToken) throw new ForbiddenException("Unauthorized: Access Denied")
+    // const user = await this.userService.getUserByEmail(payload.email)
+    // if (!user || !user.refreshToken) throw new ForbiddenException("Unauthorized: Access Denied")
 
-    const refreshTokenMatch = await bcrypt.compare(refreshToken, user.refreshToken)
-    if (!refreshTokenMatch) throw new ForbiddenException("Unauthorized: Access Denied")
+    // const refreshTokenMatch = await bcrypt.compare(refreshToken, user.refreshToken)
+    // if (!refreshTokenMatch) throw new ForbiddenException("Unauthorized: Access Denied")
     try {
-      const tokens = await this.authService.refreshToken(payload.email)
+      // const tokens = await this.authService.refreshToken(payload.email)
+      const tokens = await this.authService.refreshToken(refreshToken)
+
       if (tokens) return tokens
     }
     catch (err) {
