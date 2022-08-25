@@ -12,7 +12,7 @@ import { jwtConstants } from 'src/common/helper/jwtConstants';
 import { EmailVerification } from './dto/email-verification.input';
 import { UserService } from 'src/user/user.service';
 
-let saltRounds = 10
+let salt = 10
 @Injectable()
 export class AuthService {
   constructor(
@@ -40,7 +40,8 @@ export class AuthService {
         email: user.email
       }
       const tokens = await this.createTokens(payload)
-      await this.updateRefreshToken(user.id, tokens.refreshToken)
+      const updateRefreshToken = await this.updateRefreshToken(tokens.refreshToken)
+      if (!updateRefreshToken) return
       return tokens
     }
   }
@@ -59,18 +60,31 @@ export class AuthService {
     return { accessToken, refreshToken }
   }
 
-  async updateRefreshToken(userId: string, refreshToken: string): Promise<boolean> {
-    const hashRefreshToken = await bcrypt.hash(refreshToken, saltRounds)
-    const newUser = await this.userModel.findByIdAndUpdate(userId, { refreshToken: hashRefreshToken })
+  async updateRefreshToken(refreshToken: string): Promise<boolean> {
+    const payload = await this.jwtService.verifyAsync(refreshToken, { secret: jwtConstants.secret })
+    const userId = payload.userId
+    const timestamp = payload.iat.toString() + payload.exp.toString()
+    console.log(timestamp)
+
+    const hashTimestamp = await bcrypt.hash(timestamp, salt)
+    const newUser = await this.userModel.findByIdAndUpdate(userId, { refreshToken: hashTimestamp })
     await newUser.save()
     return true
   }
 
   async refreshToken(refreshToken: string): Promise<Tokens> {
-    const user = await this.jwtService.verifyAsync(refreshToken, { secret: jwtConstants.secret })
-    const payload = { userId: user.userId, email: user.email }
+    const payloadUser = await this.jwtService.verifyAsync(refreshToken, { secret: jwtConstants.secret })
+    const payload = { userId: payloadUser.userId, email: payloadUser.email }
+    const user = await this.userService.getUserByEmail(payload.email)
+    const timestamp = payloadUser.iat.toString() + payloadUser.exp.toString()
+
+    const refreshTokenMatch = await bcrypt.compare(timestamp, user.refreshToken)
+    console.log(refreshTokenMatch)
+    if (!refreshTokenMatch) return
+
     const tokens = await this.createTokens(payload)
-    await this.updateRefreshToken(payload.userId, tokens.refreshToken)
+    const updateRefreshToken = await this.updateRefreshToken(tokens.refreshToken)
+    if (!updateRefreshToken) return
     return tokens
   }
 
