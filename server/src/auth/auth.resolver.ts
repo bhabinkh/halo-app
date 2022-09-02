@@ -7,7 +7,7 @@ import { Auth } from './entities/auth.entity';
 import { AuthInput } from './dto/auth.input';
 import { UpdateAuthInput } from './dto/update-auth.input';
 import { Tokens } from './dto/token.dto';
-import { ForbiddenException, InternalServerErrorException, PreconditionFailedException, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, InternalServerErrorException, PreconditionFailedException, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { jwtConstants } from 'src/common/helper/jwtConstants';
 import { EmailVerification } from './dto/email-verification.input';
@@ -17,6 +17,9 @@ import { ChangePasswordInput } from './dto/change-password.input';
 import { GenerateOtp } from './dto/generate-otp.dto';
 import { ResetPasswordToken } from './dto/rp-token.dto';
 import { ChangePasswordStatus } from './dto/cp-status.dto';
+import { User } from 'src/user/dto/user.dto';
+import { FindUserInput } from './dto/find-user.input';
+import { GqlAuthGuard } from 'src/common/guard/gql-auth.guard';
 
 @Resolver(() => Auth)
 export class AuthResolver {
@@ -26,6 +29,12 @@ export class AuthResolver {
     private readonly jwtService: JwtService,
 
   ) { }
+
+  @UseGuards(GqlAuthGuard)
+  @Query(() => User)
+  findOneUser(@Args('data') data: FindUserInput) {
+    return this.userService.getUserByEmail(data.email);
+  }
 
   @Mutation(() => Tokens)
   async loginUser(@Args('data') data: AuthInput): Promise<Tokens> {

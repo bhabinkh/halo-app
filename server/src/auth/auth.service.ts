@@ -43,7 +43,8 @@ export class AuthService {
     else {
       const payload = {
         userId: user.id,
-        email: user.email
+        email: user.email,
+        roles: user.roles
       }
       const tokens = await this.createTokens(payload)
       const updateRefreshToken = await this.updateRefreshToken(tokens.refreshToken)
@@ -79,7 +80,7 @@ export class AuthService {
 
   async refreshToken(refreshToken: string): Promise<Tokens> {
     const payloadUser = await this.jwtService.verifyAsync(refreshToken, { secret: jwtConstants.rt_secret })
-    const payload = { userId: payloadUser.userId, email: payloadUser.email }
+    const payload = { userId: payloadUser.userId, email: payloadUser.email, roles: payloadUser.roles }
     const user = await this.userService.getUserByEmail(payload.email)
     const timestamp = payloadUser.iat.toString() + payloadUser.exp.toString()
 
@@ -127,7 +128,8 @@ export class AuthService {
     if (!otpMatch) return
     const payload = {
       userId: user.id,
-      email: user.email
+      email: user.email,
+      roles: user.roles
     }
     const tokens = await this.createTokens(payload)
     const timestamp = new Date().getTime().toString()
