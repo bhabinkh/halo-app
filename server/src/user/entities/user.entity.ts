@@ -29,6 +29,16 @@ export class User {
 
   @Prop({ type: String })
   refreshToken: boolean;
+
+  @Prop({ type: String })
+  otp: string;
+
+  @Prop({ type: String })
+  otpCreatedAt: string;
+
+  @Prop({ type: String })
+  token: string;
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

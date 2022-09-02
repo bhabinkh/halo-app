@@ -7,9 +7,24 @@ type Auth {
   exampleField: Int!
 }
 
-input CreateAuthInput {
+input AuthInput {
   email: String!
   password: String!
+}
+
+input AuthOtpInput {
+  email: String!
+  otp: String!
+}
+
+input ChangePasswordInput {
+  email: String!
+  password: String!
+  token: String!
+}
+
+type ChangePasswordStatus {
+  status: Boolean!
 }
 
 input CreateUserInput {
@@ -17,14 +32,27 @@ input CreateUserInput {
   password: String!
 }
 
+type ForgetPasswordTokens {
+  accessToken: String!
+  token: String!
+}
+
+type GenerateOtp {
+  otp: String!
+}
+
 type Mutation {
+  changePassword(data: ChangePasswordInput!): ChangePasswordStatus!
   createAdminUser(data: CreateUserInput!): User!
-  createAuth(createAuthInput: CreateAuthInput!): Auth!
+  createAuth(createAuthInput: AuthInput!): Auth!
   createUser(data: CreateUserInput!): User!
-  loginUser(data: CreateAuthInput!): Tokens!
+  forgetPassword(data: AuthOtpInput!): ForgetPasswordTokens!
+  generateOtp(data: String!): GenerateOtp!
+  loginUser(data: AuthInput!): Tokens!
   refreshToken(token: String!): Tokens!
   removeAuth(id: Int!): Auth!
   removeUser(id: Int!): User!
+  resetPassword(data: AuthInput!): ResetPasswordToken!
   updateAuth(updateAuthInput: UpdateAuthInput!): Auth!
   updateUser(updateUserInput: UpdateUserInput!): User!
 }
@@ -32,6 +60,10 @@ type Mutation {
 type Query {
   auth(id: Int!): Auth!
   user(email: String!): User!
+}
+
+type ResetPasswordToken {
+  token: String!
 }
 
 type Tokens {
@@ -54,8 +86,11 @@ input UpdateUserInput {
 type User {
   email: String!
   id: ID!
+  otp: String!
+  otpCreatedAt: String!
   refreshToken: String!
   roles: [String!]!
+  token: String!
   userType: String!
   verifiedEmail: Boolean!
 }

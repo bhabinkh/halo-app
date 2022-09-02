@@ -5,13 +5,13 @@ import { User } from './dto/user.dto';
 import { UpdateUserInput } from './dto/update-user.input';
 import * as bcrypt from 'bcrypt'
 
-const saltRounds = 12
+const salt = 10
 @Injectable()
 export class UserService {
   constructor(@InjectModel('User') private readonly userModel: Model<User>) { }
 
   async createUser(data: User): Promise<User> {
-    data.password = await bcrypt.hash(data.password, saltRounds)
+    data.password = await bcrypt.hash(data.password, salt)
     const newUser = await new this.userModel(data).save()
     return newUser
   }

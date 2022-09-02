@@ -22,4 +22,13 @@ export class User {
 
     @Field(() => String)
     refreshToken?: String
+
+    @Field(() => String)
+    token?: String
+
+    @Field(() => String)
+    otp?: String
+
+    @Field(() => String)
+    otpCreatedAt?: String
 }

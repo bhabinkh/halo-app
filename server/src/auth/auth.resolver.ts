@@ -4,13 +4,19 @@ import { JwtService } from '@nestjs/jwt'
 
 import { AuthService } from './auth.service';
 import { Auth } from './entities/auth.entity';
-import { CreateAuthInput } from './dto/create-auth.input';
+import { AuthInput } from './dto/auth.input';
 import { UpdateAuthInput } from './dto/update-auth.input';
 import { Tokens } from './dto/token.dto';
 import { ForbiddenException, InternalServerErrorException, PreconditionFailedException, UnauthorizedException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { jwtConstants } from 'src/common/helper/jwtConstants';
 import { EmailVerification } from './dto/email-verification.input';
+import { AuthOtpInput } from './dto/auth-otp.input';
+import { ForgetPasswordTokens } from './dto/fp-token.dto';
+import { ChangePasswordInput } from './dto/change-password.input';
+import { GenerateOtp } from './dto/generate-otp.dto';
+import { ResetPasswordToken } from './dto/rp-token.dto';
+import { ChangePasswordStatus } from './dto/cp-status.dto';
 
 @Resolver(() => Auth)
 export class AuthResolver {
@@ -22,7 +28,7 @@ export class AuthResolver {
   ) { }
 
   @Mutation(() => Tokens)
-  async loginUser(@Args('data') data: CreateAuthInput): Promise<Tokens> {
+  async loginUser(@Args('data') data: AuthInput): Promise<Tokens> {
     try {
       const tokens = await this.authService.loginUser(data)
       return tokens
@@ -42,6 +48,55 @@ export class AuthResolver {
     }
     catch (err) {
       throw new ForbiddenException("Unauthorized: Access Denied")
+    }
+  }
+
+  //Use Guards (access token)
+  @Mutation(() => ChangePasswordStatus)
+  async changePassword(@Args('data') data: ChangePasswordInput): Promise<ChangePasswordStatus> {
+    try {
+      const changePassword = await this.authService.changePassword(data)
+      return { status: changePassword.status }
+    }
+    catch (err) {
+      console.log(err)
+      throw new UnauthorizedException("Invalid Credentials")
+    }
+  }
+
+  @Mutation(() => ResetPasswordToken)
+  async resetPassword(@Args('data') data: AuthInput): Promise<ResetPasswordToken> {
+    try {
+      const token = await this.authService.resetPassword(data)
+      return { token: token.token }
+    }
+    catch (err) {
+      console.log(err)
+      throw new UnauthorizedException("Invalid Credentials")
+    }
+  }
+
+  @Mutation(() => ForgetPasswordTokens)
+  async forgetPassword(@Args('data') data: AuthOtpInput): Promise<ForgetPasswordTokens> {
+    try {
+      const tokens = await this.authService.forgetPassword(data)
+      return tokens
+    }
+    catch (err) {
+      console.log(err)
+      throw new UnauthorizedException("Invalid Credentials")
+    }
+  }
+
+  @Mutation(() => GenerateOtp)
+  async generateOtp(@Args('data') email: string): Promise<GenerateOtp> {
+    try {
+      const otp = await this.authService.generateOtp(email)
+      return { otp: otp.otp }
+    }
+    catch (err) {
+      console.log(err)
+      throw new UnauthorizedException("Invalid Credentials")
     }
   }
 
@@ -67,7 +122,7 @@ export class AuthResolver {
 
 
   @Mutation(() => Auth)
-  createAuth(@Args('createAuthInput') createAuthInput: CreateAuthInput) {
+  createAuth(@Args('createAuthInput') createAuthInput: AuthInput) {
     return this.authService.create(createAuthInput);
   }
 
