@@ -32,10 +32,6 @@ input CreateUserInput {
   password: String!
 }
 
-input FindUserInput {
-  email: String!
-}
-
 type ForgetPasswordTokens {
   accessToken: String!
   token: String!
@@ -63,7 +59,6 @@ type Mutation {
 
 type Query {
   auth(id: Int!): Auth!
-  findOneUser(data: FindUserInput!): User!
   user(email: String!): User!
 }
 

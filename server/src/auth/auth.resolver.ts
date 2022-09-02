@@ -30,11 +30,11 @@ export class AuthResolver {
 
   ) { }
 
-  @UseGuards(GqlAuthGuard)
-  @Query(() => User)
-  findOneUser(@Args('data') data: FindUserInput) {
-    return this.userService.getUserByEmail(data.email);
-  }
+  // @UseGuards(GqlAuthGuard)
+  // @Query(() => User)
+  // findOneUser(@Args('data') data: FindUserInput) {
+  //   return this.userService.getUserByEmail(data.email);
+  // }
 
   @Mutation(() => Tokens)
   async loginUser(@Args('data') data: AuthInput): Promise<Tokens> {
@@ -60,7 +60,7 @@ export class AuthResolver {
     }
   }
 
-  //Use Guards (access token)
+  @UseGuards(GqlAuthGuard)
   @Mutation(() => ChangePasswordStatus)
   async changePassword(@Args('data') data: ChangePasswordInput): Promise<ChangePasswordStatus> {
     try {
